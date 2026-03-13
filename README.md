@@ -4,9 +4,10 @@
 
 PostgreSQL 18.3
 Python 3.12
-React 18
-TypeScript 5
-Node 20
+fastapi 0.115.12
+React 19.0.0
+TypeScript 5.8.2
+Node 22
 
 ## struktura projektu 
 
