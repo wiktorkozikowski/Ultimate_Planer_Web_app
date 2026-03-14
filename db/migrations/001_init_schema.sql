@@ -4,14 +4,20 @@ CREATE TABLE IF NOT EXISTS users (
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 
-Create TABLE IF NOT EXISTS user_auth_local (
-    userid INTIGER PRYMERY KEY,
+CREATE TABLE IF NOT EXISTS user_auth_local (
+    user_id INTEGER PRIMARY KEY
+        REFERENCES users(id) ON DELETE CASCADE,
     username VARCHAR(255) NOT NULL UNIQUE,
-    email VARCHAR(255) NOT NULL UNIQUE,
-    password_hash VARCHER(255) NOT NULL,
-    password_change_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    email VARCHAR(255) NOT NULL,
+    password_hash VARCHAR(255) NOT NULL,
+    password_changed_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    failed_attempts INTEGER NOT NULL DEFAULT 0,
+    locked_until TIMESTAMP WITH TIME ZONE
+);
 
-)
+CREATE UNIQUE INDEX IF NOT EXISTS ux_user_auth_local_email_ci
+    ON user_auth_local (LOWER(email));
+
 CREATE TABLE IF NOT EXISTS planners (
     id SERIAL PRIMARY KEY,
     name VARCHAR(255) NOT NULL,
@@ -33,7 +39,9 @@ CREATE TABLE IF NOT EXISTS friends (
         REFERENCES users(id)
         ON DELETE CASCADE,
     CONSTRAINT chk_friends_not_same
-        CHECK (user_id <> friend_id)
+        CHECK (user_id <> friend_id),
+    CONSTRAINT chk_friends_order
+        CHECK (user_id < friend_id)
 );
 
 CREATE TABLE IF NOT EXISTS planner_members (
@@ -59,7 +67,7 @@ CREATE TABLE IF NOT EXISTS tasks (
     title VARCHAR(255) NOT NULL,
     body TEXT,
     status VARCHAR(50) NOT NULL CHECK (status IN ('active', 'cancelled', 'completed')),
-    priority VARCHAR(50) NOT NULL,
+    priority VARCHAR(50) NOT NULL CHECK (priority IN ('low', 'medium', 'high', 'critical')),
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     due_date TIMESTAMP WITH TIME ZONE,
 
@@ -79,7 +87,7 @@ CREATE TABLE IF NOT EXISTS subtasks (
     title VARCHAR(255) NOT NULL,
     body TEXT,
     status VARCHAR(50) NOT NULL CHECK (status IN ('active', 'cancelled', 'completed')),
-    priority VARCHAR(50) NOT NULL,
+    priority VARCHAR(50) NOT NULL CHECK (priority IN ('low', 'medium', 'high', 'critical')),
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     due_date TIMESTAMP WITH TIME ZONE,
 
@@ -88,3 +96,15 @@ CREATE TABLE IF NOT EXISTS subtasks (
         REFERENCES tasks(id)
         ON DELETE CASCADE
 );
+
+CREATE INDEX IF NOT EXISTS idx_planner_members_user_id
+    ON planner_members (user_id);
+
+CREATE INDEX IF NOT EXISTS idx_tasks_planner_id
+    ON tasks (planner_id);
+
+CREATE INDEX IF NOT EXISTS idx_tasks_assigned_user_id
+    ON tasks (assigned_user_id);
+
+CREATE INDEX IF NOT EXISTS idx_subtasks_task_id
+    ON subtasks (task_id);
