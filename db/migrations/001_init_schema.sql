@@ -18,6 +18,37 @@ CREATE TABLE IF NOT EXISTS user_auth_local (
 CREATE UNIQUE INDEX IF NOT EXISTS ux_user_auth_local_email_ci
     ON user_auth_local (LOWER(email));
 
+CREATE TABLE IF NOT EXISTS user_auth_tokens (
+    id BIGSERIAL PRIMARY KEY,
+    user_id INTEGER NOT NULL
+        REFERENCES users(id) ON DELETE CASCADE,
+    token_type VARCHAR(50) NOT NULL
+        CHECK (token_type IN ('verify_email', 'password_reset')),
+    token_hash VARCHAR(255) NOT NULL,
+    expires_at TIMESTAMP WITH TIME ZONE NOT NULL,
+    used_at TIMESTAMP WITH TIME ZONE,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE UNIQUE INDEX IF NOT EXISTS ux_user_auth_tokens_token_hash
+    ON user_auth_tokens (token_hash);
+
+CREATE INDEX IF NOT EXISTS idx_user_auth_tokens_user_type
+    ON user_auth_tokens (user_id, token_type);
+
+CREATE INDEX IF NOT EXISTS idx_user_auth_tokens_expires_at
+    ON user_auth_tokens (expires_at);
+
+CREATE TABLE IF NOT EXISTS auth_sessions (
+    id BIGSERIAL PRIMARY KEY,
+    user_id INTEGER NOT NULL
+        REFERENCES users(id) ON DELETE CASCADE,
+    refresh_token_hash VARCHAR(255) NOT NULL,
+    expires_at TIMESTAMP WITH TIME ZONE NOT NULL,
+    revoked_at TIMESTAMP WITH TIME ZONE,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
 CREATE TABLE IF NOT EXISTS planners (
     id SERIAL PRIMARY KEY,
     name VARCHAR(255) NOT NULL,
@@ -108,3 +139,12 @@ CREATE INDEX IF NOT EXISTS idx_tasks_assigned_user_id
 
 CREATE INDEX IF NOT EXISTS idx_subtasks_task_id
     ON subtasks (task_id);
+
+CREATE UNIQUE INDEX IF NOT EXISTS ux_auth_sessions_refresh_token_hash
+    ON auth_sessions (refresh_token_hash);
+
+CREATE INDEX IF NOT EXISTS idx_auth_sessions_user_id
+    ON auth_sessions (user_id);
+
+CREATE INDEX IF NOT EXISTS idx_auth_sessions_expires_at
+    ON auth_sessions (expires_at);
