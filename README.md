@@ -31,4 +31,4 @@ tu_do_list/
    ├─ Dockerfile
    ├─ public/        (pusty)
    └─ src/           (pusty)
-
+   
