@@ -3,9 +3,11 @@ import './App.css';
 
 export default function App() {
   return (
-    <main className="app">
+    <main className="app" data-testid="app-root">
       <h1>Cześć React 👋</h1>
-      <p>To jest moja pierwsza strona startowa.</p>
+      <p>To jest pierwszy element.</p>
+      <p>To jest drugi element.</p>
+      <button>Ttest</button>
     </main>
   );
 }
