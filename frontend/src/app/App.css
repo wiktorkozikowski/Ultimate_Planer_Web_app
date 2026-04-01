@@ -16,3 +16,11 @@
 .app p {
   line-height: 1.6;
 }
+
+.card {
+  margin-top: 1rem;
+  padding: 1rem;
+  border-radius: 12px;
+  background: #f8fafc;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
